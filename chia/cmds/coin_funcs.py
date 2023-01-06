@@ -18,15 +18,6 @@ from chia.wallet.util.wallet_types import WalletType
 
 async def async_list(args: Dict[str, Any], wallet_client: WalletRpcClient, fingerprint: int) -> None:
     wallet_id: int = args["id"]
-    min_coin_amount = Decimal(args["min_coin_amount"])
-    max_coin_amount = Decimal(args["max_coin_amount"])
-    excluded_coin_ids = args["excluded_coin_ids"]
-    excluded_amounts = args["excluded_amounts"]
-    addr_prefix = args["addr_prefix"]
-    show_unconfirmed = args["show_unconfirmed"]
-    paginate = args["paginate"]
-    if paginate is None:
-        paginate = sys.stdout.isatty()
     try:
         wallet_type = await get_wallet_type(wallet_id=wallet_id, wallet_client=wallet_client)
         mojo_per_unit = get_mojo_per_unit(wallet_type)
@@ -36,6 +27,15 @@ async def async_list(args: Dict[str, Any], wallet_client: WalletRpcClient, finge
     if not await wallet_client.get_synced():
         print("Wallet not synced. Please wait.")
         return
+    min_coin_amount = Decimal(args["min_coin_amount"])
+    max_coin_amount = Decimal(args["max_coin_amount"])
+    excluded_coin_ids = args["excluded_coin_ids"]
+    excluded_amounts = args["excluded_amounts"]
+    addr_prefix = args["addr_prefix"]
+    show_unconfirmed = args["show_unconfirmed"]
+    paginate = args["paginate"]
+    if paginate is None:
+        paginate = sys.stdout.isatty()
     final_min_coin_amount: uint64 = uint64(int(min_coin_amount * mojo_per_unit))
     final_max_coin_amount: uint64 = uint64(int(max_coin_amount * mojo_per_unit))
     final_excluded_amounts: List[uint64] = [uint64(int(Decimal(amount) * mojo_per_unit)) for amount in excluded_amounts]
@@ -107,16 +107,6 @@ def print_coins(
 
 async def async_combine(args: Dict[str, Any], wallet_client: WalletRpcClient, fingerprint: int) -> None:
     wallet_id: int = args["id"]
-    min_coin_amount = Decimal(args["min_coin_amount"])
-    excluded_amounts = args["excluded_amounts"]
-    number_of_coins = args["number_of_coins"]
-    max_amount = Decimal(args["max_amount"])
-    target_coin_amount = Decimal(args["target_coin_amount"])
-    target_coin_ids: List[bytes32] = [bytes32.from_hexstr(coin_id) for coin_id in args["target_coin_ids"]]
-    largest = bool(args["largest"])
-    final_fee = uint64(int(Decimal(args["fee"]) * units["chia"]))
-    if number_of_coins > 500:
-        raise ValueError(f"{number_of_coins} coins is greater then the maximum limit of 500 coins.")
     try:
         wallet_type = await get_wallet_type(wallet_id=wallet_id, wallet_client=wallet_client)
         mojo_per_unit = get_mojo_per_unit(wallet_type)
@@ -126,6 +116,16 @@ async def async_combine(args: Dict[str, Any], wallet_client: WalletRpcClient, fi
     if not await wallet_client.get_synced():
         print("Wallet not synced. Please wait.")
         return
+    number_of_coins = args["number_of_coins"]
+    if number_of_coins > 500:
+        raise ValueError(f"{number_of_coins} coins is greater then the maximum limit of 500 coins.")
+    min_coin_amount = Decimal(args["min_coin_amount"])
+    excluded_amounts = args["excluded_amounts"]
+    max_amount = Decimal(args["max_amount"])
+    target_coin_amount = Decimal(args["target_coin_amount"])
+    target_coin_ids: List[bytes32] = [bytes32.from_hexstr(coin_id) for coin_id in args["target_coin_ids"]]
+    largest = bool(args["largest"])
+    final_fee = uint64(int(Decimal(args["fee"]) * units["chia"]))
     final_max_amount = uint64(int(max_amount * mojo_per_unit)) if not target_coin_ids else uint64(0)
     final_min_coin_amount: uint64 = uint64(int(min_coin_amount * mojo_per_unit))
     final_excluded_amounts: List[uint64] = [uint64(int(Decimal(amount) * mojo_per_unit)) for amount in excluded_amounts]
@@ -179,16 +179,6 @@ async def async_combine(args: Dict[str, Any], wallet_client: WalletRpcClient, fi
 
 async def async_split(args: Dict[str, Any], wallet_client: WalletRpcClient, fingerprint: int) -> None:
     wallet_id: int = args["id"]
-    number_of_coins = args["number_of_coins"]
-    final_fee = uint64(int(Decimal(args["fee"]) * units["chia"]))
-    # new args
-    amount_per_coin = Decimal(args["amount_per_coin"])
-    target_coin_id: bytes32 = bytes32.from_hexstr(args["target_coin_id"])
-    dust_threshold = int(args["dust_threshold"])  # min amount per coin in mojo
-    spam_filter_after_n_txs = int(args["spam_filter_after_n_txs"])
-    if number_of_coins > 500:
-        print(f"{number_of_coins} coins is greater then the maximum limit of 500 coins.")
-        return
     try:
         wallet_type = await get_wallet_type(wallet_id=wallet_id, wallet_client=wallet_client)
         mojo_per_unit = get_mojo_per_unit(wallet_type)
@@ -198,6 +188,16 @@ async def async_split(args: Dict[str, Any], wallet_client: WalletRpcClient, fing
     if not await wallet_client.get_synced():
         print("Wallet not synced. Please wait.")
         return
+    number_of_coins = args["number_of_coins"]
+    if number_of_coins > 500:
+        print(f"{number_of_coins} coins is greater then the maximum limit of 500 coins.")
+        return
+    final_fee = uint64(int(Decimal(args["fee"]) * units["chia"]))
+    # new args
+    amount_per_coin = Decimal(args["amount_per_coin"])
+    target_coin_id: bytes32 = bytes32.from_hexstr(args["target_coin_id"])
+    dust_threshold = int(args["dust_threshold"])  # min amount per coin in mojo
+    spam_filter_after_n_txs = int(args["spam_filter_after_n_txs"])
     final_amount_per_coin = uint64(int(amount_per_coin * mojo_per_unit))
     total_amount = (final_amount_per_coin * number_of_coins) + final_fee
     # get full coin record from name, and validate information about it.
