@@ -169,7 +169,7 @@ def combine_cmd(
         "min_coin_amount": min_amount,
         "excluded_amounts": amounts_to_exclude,
         "number_of_coins": number_of_coins,
-        "max_amount": max_amount,
+        "max_coin_amount": max_amount,
         "fee": fee,
         "target_coin_ids": list(input_coins),
         "largest": largest_first,
