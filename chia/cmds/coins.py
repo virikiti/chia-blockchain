@@ -213,7 +213,9 @@ def combine_cmd(
     required=True,
 )
 @click.option("-t", "--target-coin-id", type=str, required=True, help="The coin id of the coin we are splitting.")
+@click.pass_context
 def split_cmd(
+    ctx: click.Context,
     wallet_rpc_port: Optional[int],
     fingerprint: int,
     id: int,
@@ -222,12 +224,15 @@ def split_cmd(
     amount_per_coin: str,
     target_coin_id: str,
 ) -> None:
+    config = load_config(ctx.obj["root_path"], "config.yaml", "wallet")
     extra_params = {
         "id": id,
         "number_of_coins": number_of_coins,
         "fee": fee,
         "amount_per_coin": amount_per_coin,
         "target_coin_id": target_coin_id,
+        "dust_threshold": config.get("xch_spam_amount", 1000000),
+        "spam_filter_after_n_txs": config.get("spam_filter_after_n_txs", 200),
     }
     from .coin_funcs import async_split
 

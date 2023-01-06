@@ -13,6 +13,7 @@ from chia.types.coin_record import CoinRecord
 from chia.util.bech32m import decode_puzzle_hash, encode_puzzle_hash
 from chia.util.ints import uint64, uint128
 from chia.wallet.transaction_record import TransactionRecord
+from chia.wallet.util.wallet_types import WalletType
 
 
 async def async_list(args: Dict[str, Any], wallet_client: WalletRpcClient, fingerprint: int) -> None:
@@ -183,6 +184,8 @@ async def async_split(args: Dict[str, Any], wallet_client: WalletRpcClient, fing
     # new args
     amount_per_coin = Decimal(args["amount_per_coin"])
     target_coin_id: bytes32 = bytes32.from_hexstr(args["target_coin_id"])
+    dust_threshold = int(args["dust_threshold"])  # min amount per coin in mojo
+    spam_filter_after_n_txs = int(args["spam_filter_after_n_txs"])
     if number_of_coins > 500:
         print(f"{number_of_coins} coins is greater then the maximum limit of 500 coins.")
         return
@@ -217,3 +220,9 @@ async def async_split(args: Dict[str, Any], wallet_client: WalletRpcClient, fing
     tx_id = transaction.name.hex()
     print(f"Transaction sent: {tx_id}")
     print(f"To get status, use command: chia wallet get_transaction -f {fingerprint} -tx 0x{tx_id}")
+    if final_amount_per_coin < dust_threshold and wallet_type == WalletType.STANDARD_WALLET:
+        print(
+            f"WARNING: The amount per coin: {amount_per_coin} is less than the dust threshold: {dust_threshold / mojo_per_unit}."
+            f"Some or all of the Coins {'will' if number_of_coins > spam_filter_after_n_txs else 'may'} not show up in your wallet unless you "
+            f"decrease the dust limit to below {final_amount_per_coin} mojos or disable it by setting it to 0."
+        )
