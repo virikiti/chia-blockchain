@@ -210,12 +210,6 @@ jobs:
           mkdir ${{ github.workspace }}/.chia
           mv ${{ github.workspace }}/test-cache-${{ env.BLOCKS_AND_PLOTS_VERSION }}/* ${{ github.workspace }}/.chia
 
-      - name: Copy pre-generated plots for CLI / Simulator Tests
-        run: |
-          mkdir ${{ github.workspace }}/.chia/simulator
-          mkdir ${{ github.workspace }}/.chia/simulator/plots
-          cp ${{ github.workspace }}/.github/test-plots/* ${{ github.workspace }}/.chia/simulator/plots
-
       - name: Install boost (macOS)
         if: matrix.os.matrix == 'macos'
         run: |
