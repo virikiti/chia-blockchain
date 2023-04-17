@@ -31,6 +31,11 @@ class WalletType(IntEnum):
     CRCAT = 5671
 
 
+class CoinType(IntEnum):
+    NORMAL = 0
+    CLAWBACK = 1
+
+
 class AmountWithPuzzlehash(TypedDict):
     amount: uint64
     puzzlehash: bytes32
